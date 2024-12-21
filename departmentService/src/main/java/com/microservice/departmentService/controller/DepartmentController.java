@@ -1,5 +1,6 @@
 package com.microservice.departmentService.controller;
 
+import com.microservice.departmentService.client.EmployeeClient;
 import com.microservice.departmentService.model.Department;
 import com.microservice.departmentService.repository.DepartmentRepository;
 import org.slf4j.Logger;
@@ -17,6 +18,9 @@ public class DepartmentController {
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    @Autowired
+    private  EmployeeClient employeeClient;
+
     @PostMapping
     public Department addDepartment(@RequestBody Department department) {
         logger.info("department added :{}",department);
@@ -33,5 +37,17 @@ public class DepartmentController {
     public Department getDepartmentById(@PathVariable Long id) {
         logger.info("getDepartmentById :{}",departmentRepository.findById(id));
         return departmentRepository.findById(id);
+    }
+
+    @GetMapping("/with-employees")
+    public List<Department> getAllDepartmentsWithEmployees() {
+//        logger.info("getAllDepartments :{}",departmentRepository.findAll());
+        logger.info("getAllDepartmentsWithEmployees");
+
+        List<Department> departments =  departmentRepository.findAll();
+        departments.forEach(department -> department.setEmployees(
+                employeeClient.getEmployeeByDepartmentId(department.getDepartmentId())
+        ));
+        return departments;
     }
 }
